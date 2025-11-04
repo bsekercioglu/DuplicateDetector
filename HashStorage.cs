@@ -1,19 +1,21 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Newtonsoft.Json;
 
 namespace DuplicateDetect
 {
     public class HashStorage
     {
-        public void SaveHashes(Dictionary<string, FileHashInfo> fileHashes, string filePath)
+        public void SaveHashes(Dictionary<string, List<FileHashInfo>> fileHashes, string filePath)
         {
+            int totalFiles = fileHashes.Values.Sum(list => list.Count);
             var data = new HashStorageData
             {
                 ScanDate = DateTime.Now,
-                TotalFiles = fileHashes.Count,
-                FileHashes = new Dictionary<string, FileHashInfo>()
+                TotalFiles = totalFiles,
+                FileHashes = new Dictionary<string, List<FileHashInfo>>()
             };
 
             foreach (var kvp in fileHashes)
@@ -55,11 +57,11 @@ namespace DuplicateDetect
     {
         public DateTime ScanDate { get; set; }
         public int TotalFiles { get; set; }
-        public Dictionary<string, FileHashInfo> FileHashes { get; set; }
+        public Dictionary<string, List<FileHashInfo>> FileHashes { get; set; }
 
         public HashStorageData()
         {
-            FileHashes = new Dictionary<string, FileHashInfo>();
+            FileHashes = new Dictionary<string, List<FileHashInfo>>();
         }
     }
 }

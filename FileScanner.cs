@@ -12,14 +12,14 @@ namespace DuplicateDetect
         private int _processedFiles = 0;
         private long _totalSize = 0;
 
-        public Dictionary<string, FileHashInfo> ScanDrive(string drivePath)
+        public Dictionary<string, List<FileHashInfo>> ScanDrive(string drivePath)
         {
             if (!Directory.Exists(drivePath))
             {
                 throw new DirectoryNotFoundException($"Sürücü bulunamadı: {drivePath}");
             }
 
-            var fileHashes = new Dictionary<string, FileHashInfo>();
+            var fileHashes = new Dictionary<string, List<FileHashInfo>>();
             _processedFiles = 0;
             _totalSize = 0;
 
@@ -40,14 +40,14 @@ namespace DuplicateDetect
             return fileHashes;
         }
 
-        public Dictionary<string, FileHashInfo> ScanPath(string path)
+        public Dictionary<string, List<FileHashInfo>> ScanPath(string path)
         {
             if (!Directory.Exists(path))
             {
                 throw new DirectoryNotFoundException($"Klasör bulunamadı: {path}");
             }
 
-            var fileHashes = new Dictionary<string, FileHashInfo>();
+            var fileHashes = new Dictionary<string, List<FileHashInfo>>();
             _processedFiles = 0;
             _totalSize = 0;
 
@@ -68,7 +68,7 @@ namespace DuplicateDetect
             return fileHashes;
         }
 
-        private void ScanDirectory(string directory, Dictionary<string, FileHashInfo> fileHashes)
+        private void ScanDirectory(string directory, Dictionary<string, List<FileHashInfo>> fileHashes)
         {
             try
             {
@@ -114,7 +114,7 @@ namespace DuplicateDetect
             }
         }
 
-        private void ProcessFile(string filePath, Dictionary<string, FileHashInfo> fileHashes)
+        private void ProcessFile(string filePath, Dictionary<string, List<FileHashInfo>> fileHashes)
         {
             var fileInfo = new System.IO.FileInfo(filePath);
             
@@ -133,7 +133,11 @@ namespace DuplicateDetect
                 LastModified = fileInfo.LastWriteTime
             };
 
-            fileHashes[hash] = info;
+            if (!fileHashes.ContainsKey(hash))
+            {
+                fileHashes[hash] = new List<FileHashInfo>();
+            }
+            fileHashes[hash].Add(info);
             _processedFiles++;
             _totalSize += fileInfo.Length;
 
@@ -168,7 +172,7 @@ namespace DuplicateDetect
             while (len >= 1024 && order < sizes.Length - 1)
             {
                 order++;
-                len = len / 1024;
+                len /= 1024;
             }
             return $"{len:0.##} {sizes[order]}";
         }
